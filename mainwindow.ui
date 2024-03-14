@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>386</width>
+    <height>389</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="2" column="2">
+     <widget class="QLabel" name="lb_status">
+      <property name="text">
+       <string>Отключено</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="1" column="1">
+     <widget class="QTableView" name="tableView"/>
+    </item>
+    <item row="1" column="2">
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0" colspan="2">
+       <widget class="QComboBox" name="cbox_airportName"/>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QComboBox" name="cbox_arrival_departure"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QDateEdit" name="de_data">
+        <property name="dateTime">
+         <datetime>
+          <hour>23</hour>
+          <minute>45</minute>
+          <second>0</second>
+          <year>2016</year>
+          <month>8</month>
+          <day>14</day>
+         </datetime>
+        </property>
+        <property name="maximumDateTime">
+         <datetime>
+          <hour>20</hour>
+          <minute>55</minute>
+          <second>0</second>
+          <year>2017</year>
+          <month>9</month>
+          <day>14</day>
+         </datetime>
+        </property>
+        <property name="minimumDateTime">
+         <datetime>
+          <hour>23</hour>
+          <minute>45</minute>
+          <second>0</second>
+          <year>2016</year>
+          <month>8</month>
+          <day>14</day>
+         </datetime>
+        </property>
+        <property name="minimumDate">
+         <date>
+          <year>2016</year>
+          <month>8</month>
+          <day>14</day>
+         </date>
+        </property>
+        <property name="maximumTime">
+         <time>
+          <hour>20</hour>
+          <minute>55</minute>
+          <second>0</second>
+         </time>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <layout class="QVBoxLayout" name="verticalLayout"/>
+      </item>
+      <item row="3" column="1">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="4" column="0">
+       <widget class="QPushButton" name="pb_getList">
+        <property name="text">
+         <string>Получить список</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>386</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFunc">
+    <property name="title">
+     <string>Подключение к БД</string>
+    </property>
+    <addaction name="a_addData"/>
+    <addaction name="a_connectData"/>
+   </widget>
+   <addaction name="menuFunc"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="a_addData">
+   <property name="text">
+    <string>Ввести данные</string>
+   </property>
+  </action>
+  <action name="a_connectData">
+   <property name="text">
+    <string>Подключиться</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
