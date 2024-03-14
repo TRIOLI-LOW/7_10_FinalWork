@@ -6,6 +6,7 @@
 #include <QtConcurrent>
 #include "database.h"
 #include "dbdata.h"
+#include "graphchart.h"
 #include <QSqlQueryModel>
 #include <QTimer>
 
@@ -25,16 +26,27 @@ public slots:
     void ReceiveStatusRequestToDB(QSqlError err, int requestType, QString request);
     void ScreenDataFromDB(QAbstractItemModel *model, int typeRequest);
 
+
+
+
 private slots:
+
+
     void on_a_addData_triggered();
     void on_a_connectData_triggered();
     void on_pb_getList_clicked();
+
+
+    void on_pb_graphPrint_clicked();
 
 private:
     Ui::MainWindow *ui;
     dbdata* dataDb;
     DataBase* dataBase;
     QMessageBox msgBox;
+
+    GraphChart* graphClass;
+
     QVector<QString> dataForConnect;
     QStringList airportName;
     QStringList arrival_departure = {"Прилёт", "Вылет"};

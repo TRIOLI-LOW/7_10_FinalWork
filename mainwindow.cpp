@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -11,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     ui->lb_status->setStyleSheet("color:red");
-
+    ui->pb_getList->setDisabled(true);
     dataForConnect.resize(NUM_DATA_DB);
     dataBase->AddDB(POSTGRE_DRIVER, DB_NAME);
 
@@ -19,13 +20,15 @@ MainWindow::MainWindow(QWidget *parent)
         dataForConnect = receivData;
     });
 
-
-
-    //Соединяем статус с сигналом
+        //Соединяем статус с сигналом
     connect(dataBase,&DataBase::sig_SendStatusConnection,this, &MainWindow::ReceiveStatusConnectionDb);
     connect(dataBase,&DataBase::sig_SendStatusRequest, this, &MainWindow::ReceiveStatusRequestToDB);
-    // Коннект сигнала для отображения
+      // Коннект сигнала для отображения
      connect(dataBase, &DataBase::sig_SendDataFromDB, this, &MainWindow::ScreenDataFromDB);
+
+    //Объявим Chart
+     graphClass = new GraphChart(NUM_GRAPHS);
+
 
    // Автоматическое подключение
     bool result = dataDb->exec();
@@ -38,36 +41,47 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::on_pb_graphPrint_clicked()
+{
+  graphClass->exec();
+
+}
+
 void MainWindow::on_a_addData_triggered(){
     dataDb->show();
 }
 void MainWindow::on_a_connectData_triggered(){
      qDebug() << "a_connectData";
-      QTimer* timer = new QTimer(this);
-      timer->setInterval(5000);
+
       bool dataStatusConnect ;
      auto conn = [&](){ dataStatusConnect  = dataBase->ConnectToDB(dataForConnect);
 
      };
     qDebug() << "befor if connect" << dataStatusConnect;
-    connect(timer, &QTimer::timeout, this, conn);
     QtConcurrent::run(conn);
-     //timer->start();
 
-    if(ui->lb_status->text() == "Подкючено"){
-         timer->stop();
+
+    if(ui->lb_status->text() == "Подключено"){
+
         qDebug() << "Connect";
      };
 
 }
 void MainWindow::ReceiveStatusConnectionDb(bool status){
+    QTimer* timer = new QTimer(this);
+    timer->setInterval(5000);
+    connect(timer, &QTimer::timeout, this, &MainWindow::on_a_connectData_triggered);
+
     if(status){
+        timer->stop();
         ui->lb_status->setText("Подключено");
         ui->lb_status->setStyleSheet("color:green");
         auto apNameCon = [&](){dataBase->ReadAnswerFromDB(airportNameRequest,requestAirport);
                                airportName = dataBase->getAirportNames();
                                ui->cbox_airportName->addItems(airportName);
                                ui->cbox_arrival_departure->addItems(arrival_departure);
+                               ui->pb_getList->setEnabled(true);
                         };
         qDebug() << "get airport name __ and append in comboBox" ;
         QtConcurrent::run(apNameCon);
@@ -79,6 +93,10 @@ void MainWindow::ReceiveStatusConnectionDb(bool status){
         msgBox.setText("Не удалось подключиться к базе данных. Повторить попытку после закрытия окна.");
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
+        if(msgBox.close()){
+        timer->start();
+        }
+
     }
 }
 
@@ -91,6 +109,7 @@ void MainWindow::on_pb_getList_clicked()
                    airportCode = code["airportCode"];
                    break;
                }
+
     }
 
     QDate selectDate = ui->de_data->date();
@@ -151,6 +170,9 @@ void MainWindow::ReceiveStatusRequestToDB(QSqlError err, int requestType, QStrin
     }
 
 }
+
+
+
 
 
 

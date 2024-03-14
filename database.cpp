@@ -120,8 +120,12 @@ void DataBase::RequestToDB(int requestType, QString request){
         emit sig_SendDataFromDB(queryModel, requestDeparturePlanes);
          break;
     }
-    case requestStatisticsMonth :{}
-    case requestStatisticsDay :{}
+    case requestStatisticsMonth :{
+
+    }
+    case requestStatisticsDay :{
+
+    }
     break;
     }
 }
