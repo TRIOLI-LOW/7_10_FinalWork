@@ -28,13 +28,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     //Объявим Chart
      graphClass = new GraphChart(NUM_GRAPHS);
-
-
    // Автоматическое подключение
     bool result = dataDb->exec();
     if (result = QDialog::Accepted){
     on_a_connectData_triggered();}
-
 }
 
 MainWindow::~MainWindow()
@@ -53,20 +50,12 @@ void MainWindow::on_a_addData_triggered(){
 }
 void MainWindow::on_a_connectData_triggered(){
      qDebug() << "a_connectData";
-
-      bool dataStatusConnect ;
-     auto conn = [&](){ dataStatusConnect  = dataBase->ConnectToDB(dataForConnect);
-
-     };
-    qDebug() << "befor if connect" << dataStatusConnect;
-    QtConcurrent::run(conn);
-
-
-    if(ui->lb_status->text() == "Подключено"){
-
+    bool dataStatusConnect ;
+    auto conn = [&](){ dataStatusConnect  = dataBase->ConnectToDB(dataForConnect);};
+        QtConcurrent::run(conn);
+    if(dataStatusConnect){
         qDebug() << "Connect";
      };
-
 }
 void MainWindow::ReceiveStatusConnectionDb(bool status){
     QTimer* timer = new QTimer(this);
