@@ -26,8 +26,8 @@ enum requestType{
     requestAirport = 0,
     requestArrivalPlanes = 1,
     requestDeparturePlanes = 2,
-    requestStatisticsMonth = 3,
-    requestStatisticsDay = 4
+    requestStatisticsYear = 3,
+    requestStatisticsMonth = 4
 };
 
 class DataBase: public QObject
@@ -39,7 +39,7 @@ class DataBase: public QObject
 public:
     explicit DataBase(QObject *parent = nullptr);
     ~DataBase();
-
+    void AutoConnect();
     void AddDB (QString driver, QString nameDb );
     void DisconnectDB(QString nameDb = "");
     bool ConnectToDB(QVector<QString> db_data);
@@ -52,9 +52,11 @@ signals:
     void sig_SendStatusConnection(bool status);
     void sig_SendDataFromDB(QAbstractItemModel *QAbstractItemModel, int typeR);
     void sig_SendStatusRequest(QSqlError err, int requestType, QString request);
+    void sig_SendDataFromGraph(int requestType, QVector<QMap<QString, QString>>& data);
 
 
 private:
+
     QVector<QMap<QString,QString>> airportNameMap;
     QSqlDatabase* dataBase;
     QSqlTableModel* tableModel;

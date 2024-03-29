@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->lb_status->setStyleSheet("color:red");
     ui->pb_getList->setDisabled(true);
+    ui->pb_graphPrint->setEnabled(false);
     dataForConnect.resize(NUM_DATA_DB);
     dataBase->AddDB(POSTGRE_DRIVER, DB_NAME);
 
@@ -24,14 +25,19 @@ MainWindow::MainWindow(QWidget *parent)
     connect(dataBase,&DataBase::sig_SendStatusConnection,this, &MainWindow::ReceiveStatusConnectionDb);
     connect(dataBase,&DataBase::sig_SendStatusRequest, this, &MainWindow::ReceiveStatusRequestToDB);
       // Коннект сигнала для отображения
-     connect(dataBase, &DataBase::sig_SendDataFromDB, this, &MainWindow::ScreenDataFromDB);
-
     //Объявим Chart
-     graphClass = new GraphChart(NUM_GRAPHS);
+     graphClass = new GraphChart(dataBase);
+     connect(dataBase, &DataBase::sig_SendDataFromDB, this, &MainWindow::ScreenDataFromDB);
+       //
+
+     connect(this,&MainWindow::sig_airportCode,graphClass ,&GraphChart::set_airportCode);
+
+
    // Автоматическое подключение
-    bool result = dataDb->exec();
-    if (result = QDialog::Accepted){
-    on_a_connectData_triggered();}
+     dataBase->AutoConnect();
+    //bool result = dataDb->exec();
+    //if (result = QDialog::Accepted){
+    //on_a_connectData_triggered();}
 }
 
 MainWindow::~MainWindow()
@@ -41,15 +47,24 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pb_graphPrint_clicked()
 {
-  graphClass->exec();
 
+  QString airportCode;
+  QString airportName = ui->cbox_airportName->currentText();
+  for(const auto& code : dataBase->airportNameMap){
+      if(code["airportName"] == airportName) {
+                 airportCode = code["airportCode"];
+                 break;
+             }
+  }
+    emit sig_airportCode(airportCode);
+  graphClass->exec();
 }
 
 void MainWindow::on_a_addData_triggered(){
     dataDb->show();
 }
 void MainWindow::on_a_connectData_triggered(){
-     qDebug() << "a_connectData";
+     //qDebug() << "a_connectData";
     bool dataStatusConnect ;
     auto conn = [&](){ dataStatusConnect  = dataBase->ConnectToDB(dataForConnect);};
         QtConcurrent::run(conn);
@@ -66,13 +81,14 @@ void MainWindow::ReceiveStatusConnectionDb(bool status){
         timer->stop();
         ui->lb_status->setText("Подключено");
         ui->lb_status->setStyleSheet("color:green");
-        auto apNameCon = [&](){dataBase->ReadAnswerFromDB(airportNameRequest,requestAirport);
+        auto apNameCon = [&](){dataBase->RequestToDB(requestAirport, airportNameRequest);
                                airportName = dataBase->getAirportNames();
                                ui->cbox_airportName->addItems(airportName);
                                ui->cbox_arrival_departure->addItems(arrival_departure);
                                ui->pb_getList->setEnabled(true);
+                               ui->pb_graphPrint->setEnabled(true);
                         };
-        qDebug() << "get airport name __ and append in comboBox" ;
+        //qDebug() << "get airport name __ and append in comboBox" ;
         QtConcurrent::run(apNameCon);
     }
     else{
@@ -88,7 +104,7 @@ void MainWindow::ReceiveStatusConnectionDb(bool status){
 
     }
 }
-
+// -----------------Кнопка "Получить список" ----
 void MainWindow::on_pb_getList_clicked()
 {
     QString airportCode;
@@ -98,30 +114,30 @@ void MainWindow::on_pb_getList_clicked()
                    airportCode = code["airportCode"];
                    break;
                }
-
     }
-
     QDate selectDate = ui->de_data->date();
 
     if (ui->cbox_arrival_departure->currentText() == "Прилёт") {
 
-         QString request = "SELECT flight_no, scheduled_arrival, ad.airport_name->>'ru' as Name from bookings.flights f "
+         QString request = "SELECT flight_no, scheduled_arrival, ad.airport_name->>'ru' as \"Name\" "
+                           "from bookings.flights f "
                            "JOIN bookings.airports_data ad on ad.airport_code = f.departure_airport "
                            "where f.arrival_airport  = '" + airportCode + "' "
                            "And DATE(scheduled_arrival) = '"+ selectDate.toString("yyyy-MM-dd") + "'";
                             ;
         auto arrivalRun = [&](){dataBase->ReadAnswerFromDB(request,requestArrivalPlanes);};
         QtConcurrent::run(arrivalRun);
-        qDebug()<< "on_pb_clicked";
+                qDebug()<< "on_pb_clicked_getList_clicked";
     }
     else {
-        QString request = "SELECT flight_no, scheduled_departure, ad.airport_name->>'ru' AS Name from bookings.flights f "
+        QString request = "SELECT flight_no, scheduled_departure, ad.airport_name->>'ru' AS \"Name\" "
+                          "from bookings.flights f "
                           "JOIN bookings.airports_data ad on ad.airport_code = f.arrival_airport "
                           "WHERE f.departure_airport  = '" + airportCode + "' "
                           "And DATE(scheduled_arrival) = '"+ selectDate.toString("yyyy-MM-dd") + "'";
         auto departureRun = [&](){dataBase->ReadAnswerFromDB(request,requestDeparturePlanes);};
         QtConcurrent::run(departureRun);
-         qDebug()<< "on_pb_clicked";
+                qDebug()<< "on_pb_clicked_getList_clicked";
 
     }
 }
@@ -129,22 +145,20 @@ void MainWindow::ScreenDataFromDB(QAbstractItemModel *model, int typeRequest)
 {
     switch(typeRequest){
     case requestArrivalPlanes:{
-        QSqlQueryModel* querymodel = qobject_cast<QSqlQueryModel*>(model);
-        qDebug() << "ScreenDataFromDB";
-        ui->tableView->setModel(querymodel);
+        ui->tableView->setModel(model);
         ui->tableView->show();
          break;}
     case requestDeparturePlanes:{
         ui->tableView->setModel(model);
         ui->tableView->show();
-        qDebug() << "ScreenDataFromDB";
+                //qDebug() << "ScreenDataFromDB";
      break;}
 
         break;
 }
 }
 void MainWindow::ReceiveStatusRequestToDB(QSqlError err, int requestType, QString request){
-    qDebug() << "ReceiveStatusRequestToDB" << requestType ;
+                //qDebug() << "ReceiveStatusRequestToDB" << requestType ;
     if(err.type() != QSqlError::NoError){
         //msgBox->setText(err.text());
         //msgBox->exec();

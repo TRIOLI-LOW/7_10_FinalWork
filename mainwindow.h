@@ -27,10 +27,10 @@ public slots:
     void ScreenDataFromDB(QAbstractItemModel *model, int typeRequest);
 
 
-
+signals:
+        void sig_airportCode(QString airPCode);
 
 private slots:
-
 
     void on_a_addData_triggered();
     void on_a_connectData_triggered();
