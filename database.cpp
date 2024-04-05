@@ -141,7 +141,7 @@ void DataBase::RequestToDB(int requestType, QString request){
 
             dataYear.append(monthData);
         }
-        qRegisterMetaType<QVector<QMap<QString, QString>>>("QVector<QMap<QString, QString>>");
+
         emit sig_SendDataFromGraph(requestStatisticsYear, dataYear);
        // qDebug()  <<" emit  && dataYear ===" << dataYear;
         break;

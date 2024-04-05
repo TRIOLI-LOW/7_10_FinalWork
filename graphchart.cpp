@@ -13,7 +13,7 @@ GraphChart::GraphChart(DataBase* db, QWidget *parent) :
      ui->tabWidget->setTabText(0, "Стастистика за год");
      ui->tabWidget->setTabText(1, "Стастистика за месяц");
     ui->cbox_month->addItems(month);
-
+    qRegisterMetaType<QVector<QMap<QString, QString>>>("QVector<QMap<QString, QString>>");
     connect(dataBase, &DataBase::sig_SendDataFromGraph, this, &GraphChart::LoadStatistic);
     connect(this, &GraphChart::sig_GraphPrintSlot,this,&GraphChart::GraphPrintSlot);
        numGraph = NUM_GRAPHS;

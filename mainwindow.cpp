@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pb_graphPrint->setEnabled(false);
     dataForConnect.resize(NUM_DATA_DB);
     dataBase->AddDB(POSTGRE_DRIVER, DB_NAME);
-
+    qRegisterMetaType<QVector<QMap<QString, QString>>>("QVector<QMap<QString, QString>>");
     connect(dataDb, &dbdata::sig_sendData, this, [&](QVector<QString> receivData){
         dataForConnect = receivData;
     });
