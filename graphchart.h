@@ -29,14 +29,15 @@ class GraphChart : public QDialog
 public slots:
 
 
-    void GraphPrintSlot(QChart* chart);
+    void GraphPrintSlot(QChart* chart, int requestType);
     void set_airportCode(QString airPCode){
         airportCode = airPCode;};
     void requestProcess(int index);
-    void LoadStatistic(int requestType, QVector<QMap<QString, QString>>& data);
+    void monthIndexSave(int index);
+    void LoadStatistic(int requestType, QVector<QMap<QString, QString>> data);
 
 signals:
-    void sig_GraphPrintSlot(QChart* chart);
+    void sig_GraphPrintSlot(QChart* chart, int requestType);
 
 public:
     explicit GraphChart(DataBase* db, QWidget *parent = nullptr);
@@ -50,6 +51,7 @@ private slots:
     void on_tabWidget_tabBarClicked(int index);
 
 private:
+    int monthIndex = 0;
     DataBase* dataBase;
     QChart* chart;
     QChartView* chartView;

@@ -148,7 +148,7 @@ void DataBase::RequestToDB(int requestType, QString request){
     }
         //---------Добавляем в мапу из запроса статистики месяца
     case requestStatisticsMonth :{
-        //queryModel->setQuery(request, *dataBase);
+       // queryModel->setQuery(request, *dataBase);
         //qDebug() << request;
         *simpleQuery = QSqlQuery(request, *dataBase);
         QVector<QMap<QString, QString>> dataMonth;

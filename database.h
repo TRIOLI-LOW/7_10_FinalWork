@@ -52,7 +52,7 @@ signals:
     void sig_SendStatusConnection(bool status);
     void sig_SendDataFromDB(QAbstractItemModel *QAbstractItemModel, int typeR);
     void sig_SendStatusRequest(QSqlError err, int requestType, QString request);
-    void sig_SendDataFromGraph(int requestType, QVector<QMap<QString, QString>>& data);
+    void sig_SendDataFromGraph(int requestType, QVector<QMap<QString, QString>> data);
 
 
 private:
