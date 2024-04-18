@@ -28,7 +28,6 @@ class GraphChart : public QDialog
     Q_OBJECT
 public slots:
 
-    void setUpMonth();
     void GraphPrintSlot(QChart* chart, int requestType);
     void set_airportCode(QString airPCode){
         airportCode = airPCode;};
@@ -51,6 +50,8 @@ public:
 
 private slots:
 
+
+    void on_GraphChart_finished(int result);
 
 private:
     int monthIndex = 0;

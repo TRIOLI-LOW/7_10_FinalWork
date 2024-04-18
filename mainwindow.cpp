@@ -56,7 +56,7 @@ void MainWindow::on_pb_graphPrint_clicked()
   }
 
     emit sig_airportCode(airportCode);
-    graphClass->setUpMonth();
+    graphClass->requestProcess(1);
     graphClass->exec();
 
 }

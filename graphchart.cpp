@@ -26,11 +26,10 @@ GraphChart::GraphChart(DataBase* db, QWidget *parent) :
     connect(ui->cbox_month, QOverload<int>::of(&QComboBox::activated), this, &GraphChart::monthIndexSave);
 }
 
-void GraphChart::setUpMonth(){
-    //ui->tabWidget->setCurrentIndex(1);
-    //ui->cbox_month->setCurrentIndex(0);
-    requestProcess(1);
+void GraphChart::on_GraphChart_finished(int result)
+{
 
+    dataMonth.clear();
 }
 void GraphChart::monthIndexSave(int index){
    MonthStatistic(dataMonth, index);
@@ -39,8 +38,8 @@ void GraphChart::MonthStatistic(QVector<QMap<QString, QString> > data, int index
     ClearGraph(chart);
     monthIndex = index + 1;
     uint i  = 1;
-    QVector<uint> y;
-    QVector<uint> x;
+    QVector<uint> y ;
+    QVector<uint> x ;
     int monthInt  ;
     qDebug() << monthIndex;
     for(const auto it: data){
@@ -48,7 +47,6 @@ void GraphChart::MonthStatistic(QVector<QMap<QString, QString> > data, int index
         QDateTime dateTime = QDateTime::fromString(it["Day"], "yyyy-MM-dd'T'HH:mm:ss.zzz");
         //qDebug()  << " monthInt "<< monthInt  << "dateTime"<< dateTime;
          monthInt = dateTime.date().month();
-        // Пока monthInt ==  Январь
         if(monthInt == monthIndex){
                 y.append(it["FlightCount"].toUInt());
                   x.append(i++);
@@ -58,7 +56,7 @@ void GraphChart::MonthStatistic(QVector<QMap<QString, QString> > data, int index
     //qDebug() << "x = "<< x ;
 
     AddToGraph(x,y);
-    UpdateGraph(chart, 1);
+
     chart->addSeries(lineSeries);
     chart->setTitle("Статистика загруженности за " + ui->cbox_month->currentText());
     chart->setAnimationOptions(QChart::SeriesAnimations);
@@ -79,13 +77,13 @@ void GraphChart::GraphPrintSlot(QChart* chartPrint, int requestType){
     if(requestType == requestStatisticsMonth){
         ui->gv_month->setViewport(chartView);
     }
+
 }
 
 void GraphChart::LoadStatistic(int requestType, QVector<QMap<QString, QString>> data){
             qDebug() << "LoadStatistic ---- open";
-
+     ClearGraph(chart);
     if(requestType == requestStatisticsYear){
-        ClearGraph(chart);
                 //---------------Заполняем стобиковую диаграмму данными--------------
         QBarSet *barSet = new QBarSet("Колличество полётов");
         for(const auto& it : data){
@@ -110,6 +108,7 @@ void GraphChart::LoadStatistic(int requestType, QVector<QMap<QString, QString>> 
     // ------------- Иначе если в месяце ----------
     else if(requestType == requestStatisticsMonth){
          ui->cbox_month->setCurrentIndex(0);
+         if(dataMonth.isEmpty()){
         for(const auto it: data){
            //-------  сохраняем dataMonth
             QString day = it["Day"];
@@ -118,7 +117,7 @@ void GraphChart::LoadStatistic(int requestType, QVector<QMap<QString, QString>> 
             dayData["Day"] = day;
             dayData["FlightCount"] = flightCount;
             dataMonth.append(dayData);
-
+            }
         }
         qDebug() << "tha month" << dataMonth;
         MonthStatistic(dataMonth, 1);
@@ -181,6 +180,9 @@ GraphChart::~GraphChart()
 {
     delete ui;
 }
+
+
+
 
 
 
