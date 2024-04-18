@@ -29,7 +29,7 @@ DataBase::~DataBase()
 
 void DataBase::AddDB(QString driver, QString nameDb){
     *dataBase = QSqlDatabase::addDatabase(driver, nameDb);
-
+    simpleQuery = new QSqlQuery(*dataBase);
      tableModel = new QSqlTableModel(this, *dataBase);
 
 }

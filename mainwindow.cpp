@@ -28,8 +28,6 @@ MainWindow::MainWindow(QWidget *parent)
     //Объявим Chart
      graphClass = new GraphChart(dataBase);
      connect(dataBase, &DataBase::sig_SendDataFromDB, this, &MainWindow::ScreenDataFromDB);
-       //
-
      connect(this,&MainWindow::sig_airportCode,graphClass ,&GraphChart::set_airportCode);
 
 
@@ -56,8 +54,11 @@ void MainWindow::on_pb_graphPrint_clicked()
                  break;
              }
   }
+
     emit sig_airportCode(airportCode);
-  graphClass->exec();
+    graphClass->setUpMonth();
+    graphClass->exec();
+
 }
 
 void MainWindow::on_a_addData_triggered(){

@@ -28,7 +28,7 @@ class GraphChart : public QDialog
     Q_OBJECT
 public slots:
 
-
+    void setUpMonth();
     void GraphPrintSlot(QChart* chart, int requestType);
     void set_airportCode(QString airPCode){
         airportCode = airPCode;};
@@ -40,15 +40,17 @@ signals:
     void sig_GraphPrintSlot(QChart* chart, int requestType);
 
 public:
+
     explicit GraphChart(DataBase* db, QWidget *parent = nullptr);
     ~GraphChart();
+    void MonthStatistic(QVector<QMap<QString, QString>> data, int index);
     void AddToGraph(QVector<uint> x , QVector<uint> y);
     void UpdateGraph(QChart *chart,int numSeries);
     void ClearGraph (QChart *chart);
 
 
 private slots:
-    void on_tabWidget_tabBarClicked(int index);
+
 
 private:
     int monthIndex = 0;
@@ -62,6 +64,7 @@ private:
     uint numGraph;
     Ui::GraphChart *ui;
     QString airportCode;
+    QVector<QMap<QString, QString>> dataMonth;
     QVector<QString> month {    "Январь",
                                 "Февраль",
                                 "Март",
