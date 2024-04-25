@@ -26,9 +26,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(dataBase,&DataBase::sig_SendStatusRequest, this, &MainWindow::ReceiveStatusRequestToDB);
       // Коннект сигнала для отображения
     //Объявим Chart
-     graphClass = new GraphChart(dataBase);
+     graphClass = new GraphChart();
+     connect(dataBase, &DataBase::sig_SendDataFromGraph, this, &MainWindow::DataFromGraph);
      connect(dataBase, &DataBase::sig_SendDataFromDB, this, &MainWindow::ScreenDataFromDB);
-     connect(this,&MainWindow::sig_airportCode,graphClass ,&GraphChart::set_airportCode);
+
 
 
    // Автоматическое подключение
@@ -43,6 +44,12 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::DataFromGraph(int requestType, QVector<QMap<QString, QString>> data){
+    graphClass->getData(requestType, data );
+    qDebug() <<
+                "DataFromGraph = "  << data;
+
+}
 void MainWindow::on_pb_graphPrint_clicked()
 {
 
@@ -51,15 +58,33 @@ void MainWindow::on_pb_graphPrint_clicked()
   for(const auto& code : dataBase->airportNameMap){
       if(code["airportName"] == airportName) {
                  airportCode = code["airportCode"];
-                 break;
-             }
-  }
+                 break;         
+        }
+    }
+//    QString request_year = "SELECT count(flight_no), date_trunc('month', scheduled_departure) as \"Month\" "
+//                      "FROM bookings.flights f "
+//                      "WHERE (scheduled_departure::date > date('2016-08-31') "
+//                      "and scheduled_departure::date <= date('2017-08-31')) "
+//                      "and ( departure_airport = '" + airportCode + "' or arrival_airport = '" + airportCode + "' ) "
+//                      "group by \"Month\" ";
+//    auto requestYear = [&](){dataBase->RequestToDB( requestStatisticsYear, request_year);};
+//    QtConcurrent::run(requestYear);
 
-    emit sig_airportCode(airportCode);
-    graphClass->requestProcess(1);
+
+    QString request_month = "SELECT count(flight_no), date_trunc('day', scheduled_departure) as \"Day\" "
+                      "from bookings.flights f "
+                      "WHERE(scheduled_departure::date > date('2016-08-31') "
+                      "and scheduled_departure::date <= date('2017-08-31')) "
+                      "and ( departure_airport = '" + airportCode + "' or arrival_airport = '" + airportCode + "' ) "
+                      "GROUP BY \"Day\" ";
+
+    auto requestMonth = [&](){dataBase->RequestToDB( requestStatisticsMonth, request_month );};
+    QtConcurrent::run(requestMonth);
+
+    qDebug ()<< "graphClass->exec();";
     graphClass->exec();
-
 }
+
 
 void MainWindow::on_a_addData_triggered(){
     dataDb->show();
@@ -145,17 +170,16 @@ void MainWindow::on_pb_getList_clicked()
 void MainWindow::ScreenDataFromDB(QAbstractItemModel *model, int typeRequest)
 {
     switch(typeRequest){
-    case requestArrivalPlanes:{
-        ui->tableView->setModel(model);
-        ui->tableView->show();
-         break;}
-    case requestDeparturePlanes:{
-        ui->tableView->setModel(model);
-        ui->tableView->show();
+        case requestArrivalPlanes:{
+            ui->tableView->setModel(model);
+            ui->tableView->show();
+        break;}
+        case requestDeparturePlanes:{
+            ui->tableView->setModel(model);
+            ui->tableView->show();
                 //qDebug() << "ScreenDataFromDB";
-     break;}
-
-        break;
+        break;}
+    break;
 }
 }
 void MainWindow::ReceiveStatusRequestToDB(QSqlError err, int requestType, QString request){

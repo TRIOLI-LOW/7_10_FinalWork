@@ -1,12 +1,12 @@
 #include "graphchart.h"
 #include "ui_graphchart.h"
 
-GraphChart::GraphChart(DataBase* db, QWidget *parent) :
+GraphChart::GraphChart( QWidget *parent) :
     QDialog(parent),
     ui(new Ui::GraphChart)
 {
     ui->setupUi(this);
-    dataBase = db;
+    //dataBase = db;
     //Объявим Chart
      chart = new QChart();
      chartView = new QChartView(chart);
@@ -15,27 +15,71 @@ GraphChart::GraphChart(DataBase* db, QWidget *parent) :
     ui->cbox_month->addItems(month);
     qRegisterMetaType<QVector<QMap<QString, QString>>>("QVector<QMap<QString, QString>>");
 
-    connect(dataBase, &DataBase::sig_SendDataFromGraph, this, &GraphChart::LoadStatistic);
+
     connect(this, &GraphChart::sig_GraphPrintSlot,this,&GraphChart::GraphPrintSlot);
        numGraph = NUM_GRAPHS;
        barSeries = new QBarSeries();
        lineSeries = new QLineSeries();
 
        //Сигнал передачи ответа запроса.
-    connect(ui->tabWidget,&QTabWidget::tabBarClicked, this, &GraphChart::requestProcess);
+    //connect(ui->tabWidget,&QTabWidget::tabBarClicked, this, &GraphChart::requestProcess);
     connect(ui->cbox_month, QOverload<int>::of(&QComboBox::activated), this, &GraphChart::monthIndexSave);
+    connect(ui->tabWidget,&QTabWidget::currentChanged, this, &GraphChart::LoadStatistic);
+
 }
 
 void GraphChart::on_GraphChart_finished(int result)
 {
+        ClearGraph(chart);
+        dataYear.clear();
+        dataMonth.clear();
 
-    dataMonth.clear();
 }
 void GraphChart::monthIndexSave(int index){
    MonthStatistic(dataMonth, index);
 }
+void GraphChart::getData(int requestType, QVector<QMap<QString, QString> > data){
+
+    switch (requestType) {
+    case requestStatisticsYear :{
+        dataYear.clear();
+        if(dataYear.isEmpty()){
+       for(const auto it: data){
+          //-------  сохраняем dataYear
+           QString month = it["Month"];
+           QString flightCount  = it["FlightCount"];
+           QMap<QString, QString> YearData;
+           YearData["Month"] = month;
+           YearData["FlightCount"] = flightCount;
+           dataYear.append(YearData);
+           }
+       }
+        LoadStatistic(0);
+        break;
+    }
+    case requestStatisticsMonth :{
+        dataMonth.clear();
+        if(dataMonth.isEmpty()){
+       for(const auto it: data){
+          //-------  сохраняем dataMonth
+           QString day = it["Day"];
+           QString flightCount  = it["FlightCount"];
+           QMap<QString, QString> dayData;
+           dayData["Day"] = day;
+           dayData["FlightCount"] = flightCount;
+           dataMonth.append(dayData);
+           }
+       }
+        LoadStatistic(1);
+        break;
+    }
+        break;
+    }
+}
+
 void GraphChart::MonthStatistic(QVector<QMap<QString, QString> > data, int index){
     ClearGraph(chart);
+
     monthIndex = index + 1;
     uint i  = 1;
     QVector<uint> y ;
@@ -52,8 +96,8 @@ void GraphChart::MonthStatistic(QVector<QMap<QString, QString> > data, int index
                   x.append(i++);
         }
     }
-    //qDebug() << "y = " << y;
-    //qDebug() << "x = "<< x ;
+    qDebug() << "y = " << y;
+    qDebug() << "x = "<< x ;
 
     AddToGraph(x,y);
 
@@ -80,13 +124,14 @@ void GraphChart::GraphPrintSlot(QChart* chartPrint, int requestType){
 
 }
 
-void GraphChart::LoadStatistic(int requestType, QVector<QMap<QString, QString>> data){
+void GraphChart::LoadStatistic(int requestType){
             qDebug() << "LoadStatistic ---- open";
-     ClearGraph(chart);
-    if(requestType == requestStatisticsYear){
+    ClearGraph(chart);
+    if(requestType == 0){
+        ui->cbox_month->setCurrentIndex(0);
                 //---------------Заполняем стобиковую диаграмму данными--------------
         QBarSet *barSet = new QBarSet("Колличество полётов");
-        for(const auto& it : data){
+        for(const auto& it : dataYear){
             int flightCount = it["FlightCount"].toInt();
             *barSet << flightCount;
         }
@@ -102,56 +147,19 @@ void GraphChart::LoadStatistic(int requestType, QVector<QMap<QString, QString>> 
         chart->setAnimationOptions(QChart::SeriesAnimations);
         chart->createDefaultAxes();
         emit sig_GraphPrintSlot(chart,requestStatisticsYear );
-        qDebug() << "emit ------ signals for print chart";
+        qDebug() << "emit ------ signals for print chart Year";
 
     }
     // ------------- Иначе если в месяце ----------
-    else if(requestType == requestStatisticsMonth){
+    else if(requestType == 1){
          ui->cbox_month->setCurrentIndex(0);
-         if(dataMonth.isEmpty()){
-        for(const auto it: data){
-           //-------  сохраняем dataMonth
-            QString day = it["Day"];
-            QString flightCount  = it["FlightCount"];
-            QMap<QString, QString> dayData;
-            dayData["Day"] = day;
-            dayData["FlightCount"] = flightCount;
-            dataMonth.append(dayData);
-            }
-        }
+
         qDebug() << "tha month" << dataMonth;
-        MonthStatistic(dataMonth, 1);
+        MonthStatistic(dataMonth, 0);
     }
 
 }
-void GraphChart::requestProcess(int index){
-    if(index == 0){
-      QString request = "SELECT count(flight_no), date_trunc('month', scheduled_departure) as \"Month\" "
-                        "FROM bookings.flights f "
-                        "WHERE (scheduled_departure::date > date('2016-08-31') "
-                        "and scheduled_departure::date <= date('2017-08-31')) "
-                        "and ( departure_airport = '" + airportCode + "' or arrival_airport = '" + airportCode + "' ) "
-                        "group by \"Month\" ";
-      auto requestYear = [&](){dataBase->RequestToDB( requestStatisticsYear, request);};
-      QtConcurrent::run(requestYear);
-      qDebug() << "requestProcess ----" << index << airportCode ;
-    }
-    else{
 
-      QString request = "SELECT count(flight_no), date_trunc('day', scheduled_departure) as \"Day\" "
-                        "from bookings.flights f "
-                        "WHERE(scheduled_departure::date > date('2016-08-31') "
-                        "and scheduled_departure::date <= date('2017-08-31')) "
-                        "and ( departure_airport = '" + airportCode + "' or arrival_airport = '" + airportCode + "' ) "
-                        "GROUP BY \"Day\" ";
-
-      auto requestMonth = [&](){dataBase->RequestToDB( requestStatisticsMonth, request);};
-      QtConcurrent::run(requestMonth);
-
-      qDebug() << "requestProcess ----" << index << airportCode ;
-    }
-
-}
 void GraphChart::AddToGraph(QVector<uint> x , QVector<uint> y){
     uint size = 0;
     if(x.size() >= y.size()){

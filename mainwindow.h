@@ -25,7 +25,7 @@ public slots:
     void ReceiveStatusConnectionDb(bool status);
     void ReceiveStatusRequestToDB(QSqlError err, int requestType, QString request);
     void ScreenDataFromDB(QAbstractItemModel *model, int typeRequest);
-
+    void DataFromGraph(int index, QVector<QMap<QString, QString>> data);
 
 signals:
         void sig_airportCode(QString airPCode);
